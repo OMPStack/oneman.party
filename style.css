@@ -1,0 +1,104 @@
+:root {
+    --accent-color: #88ff88;
+    --bg-color: #0e0e0e;
+    --text-color: aliceblue;
+    --hacker-font: "Courier New", monospace;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-block: 10rem 5rem;
+}
+
+h1 {
+    font-family: "Share Tech Mono", monospace;
+    letter-spacing: .3em;
+    font-size:3em;
+}
+
+.teaser {
+    margin: 2rem auto;
+    text-align: left;
+    min-width: 50%;
+    max-width: min(600px, 90%);
+    border: 1px solid var(--accent-color);
+    padding: 1rem;
+    border-radius: 3px;
+    font-family: var(--hacker-font), monospace;
+    font-size: .8em
+}
+
+.navbar {
+    background-color: #303030aa;
+    padding: 1rem;
+    margin-block: 3rem;
+}
+
+.nav-item {
+    --margin-between: 1.5rem;
+
+    position: relative;
+    margin-inline: var(--margin-between);
+}
+.nav-item:not(:last-child)::after {
+    --bar-length: 40px;
+    --bar-angle: 25deg;
+
+    content: "";
+    position: absolute;
+    right: calc(-1 * var(--margin-between) + sin(var(--bar-angle)) * var(--bar-length) / 2);
+    top: 50%;
+    width: 2px;
+    height: var(--bar-length);
+    background-color: var(--accent-color);
+    transform: rotate(var(--bar-angle)) translateY(-50%);
+    transform-origin: center;
+    opacity: 0.6;
+}
+
+.nav-item a:hover {
+    box-shadow: 0 2px 0 0 var(--accent-color);
+}
+
+h2:before {
+    content: "$";
+    color: var(--accent-color);
+    font-family: monospace;
+    font-size: 1.1em;
+    margin-right: .5em;
+}
+h2 {
+    margin-bottom: 1rem;
+    font-family: var(--hacker-font), monospace;
+}
+
+section {
+    margin-bottom: 5rem;
+}
+
+section p {
+    max-width: 55ch;
+    font-family: var(--hacker-font), monospace;
+}
+
+@media (min-width: 992px) {
+    section#about {
+        background: url(img/playing-with-numbers.png) no-repeat right / contain;
+    }
+}
+
+footer a {
+    color: var(--text-color);
+    font-size: 2rem;
+
+    & :hover {
+        color: var(--accent-color);
+    }
+}
