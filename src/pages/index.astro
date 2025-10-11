@@ -1,0 +1,53 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import ArticleList from "../components/ArticleList.astro";
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+        <style>
+            header {
+                margin-block: 10rem 5rem;
+            }
+        </style>
+	</head>
+	<body>
+        <header>
+            <h1>One Man Party</h1>
+            <div class="teaser">
+                Yes. This is a single person.<br/>
+                If I am ranked in front of you, you should <!-- read my articles --> pick up some meta-gaming...
+            </div>
+        </header>
+		<main class="container">
+            <section id="about">
+                <h2>whoami</h2>
+                <p>I am an Austrian CTF player that enjoys tinkering with CTF infra.</p>
+                <p>
+                    Nobody likes people that "break" infra if there is a working exploit that should run.<br/>
+                    The firewall blocks ALL traffic? SLA is tanking because of an experimental setup? <br>
+                </p>
+                <p>
+                    <strong>Easy solution:</strong> Skip the complaining teammates!
+                </p>
+                <p>
+                    The OneManParty is not about winning CTFs. It is about trying and evaluating new strategies.
+                    After each CTF there should be a postmortem on this site that discusses what worked and what needs
+                    improvements.
+                </p>
+                <p>More content coming soon&trade;...</p>
+            </section>
+            <section id="blog">
+                <h2>articles.txt</h2>
+                <ArticleList limit="3"/>
+                <a class="btn btn-outline-accent w-100 mt-2" href="/blog/">Show all</a>
+            </section>
+		</main>
+		<Footer />
+	</body>
+</html>

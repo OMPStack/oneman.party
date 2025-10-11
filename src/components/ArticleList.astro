@@ -1,0 +1,54 @@
+---
+import {Image} from 'astro:assets';
+import {getCollection} from 'astro:content';
+import FormattedDate from './FormattedDate.astro';
+
+const {limit} = Astro.props;
+
+const posts = (await getCollection('blog')).filter(p => p.data.released).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+let moreToShow = false;
+if (limit) {
+    moreToShow = posts.length > limit;
+    posts.splice(limit);
+}
+---
+
+<div class="article-list">
+    {
+        posts.map((post) => (
+            <div class="post-item">
+                {post.data.heroImage && (
+                        <Image width={720} height={360} src={post.data.heroImage} alt=""/>
+                )}
+                <a href={`/blog/${post.id}/`}>
+                    <h4 class="title">{post.data.title}</h4>
+                </a>
+                <p class="date">
+                    <FormattedDate date={post.data.pubDate}/>
+                </p>
+                <p class="description">{post.data.description}</p>
+            </div>
+        ))
+    }
+</div>
+<style>
+    .article-list {
+        list-style-type: none;
+        padding:0;
+    }
+
+    .post-item:not(:last-child)::after {
+        content: " ";
+        display:block;
+        margin:4rem auto;
+        border-bottom:2px solid #88ff88;
+        width:100px;
+        height:1px;
+    }
+
+    .post-item {
+        padding: 1rem 3rem 0 3rem;
+    }
+</style>

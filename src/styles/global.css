@@ -14,13 +14,15 @@ body {
 
 header {
     text-align: center;
-    margin-block: 10rem 5rem;
+
+    margin-block: 2rem 5rem;
 }
 
 h1 {
     font-family: "Share Tech Mono", monospace;
     letter-spacing: .3em;
     font-size:3em;
+    color: var(--text-color)
 }
 
 .teaser {
@@ -90,7 +92,7 @@ section p {
 
 @media (min-width: 992px) {
     section#about {
-        background: url(img/playing-with-numbers.png) no-repeat right / contain;
+        background: url("/img/playing-with-numbers.png") no-repeat right / contain;
     }
 }
 
@@ -112,4 +114,22 @@ footer a {
         stroke: var(--accent-color);
         fill: var(--accent-color);
     }
+}
+
+.btn-outline-accent {
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    background: transparent;
+    padding: .5rem 1rem;
+    font-family: var(--hacker-font), monospace;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-outline-accent:hover {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    outline: var(--bg-color) solid 2px;
+    outline-offset: -5px;
 }
