@@ -2,6 +2,8 @@
     --accent-color: #88ff88;
     --bg-color: #0e0e0e;
     --text-color: aliceblue;
+    --muted-text-color: #74787c;
+    --bs-secondary-color: var(--muted-text-color);
     --hacker-font: "Courier New", monospace;
 }
 

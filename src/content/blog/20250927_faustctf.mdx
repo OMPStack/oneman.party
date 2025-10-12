@@ -1,0 +1,198 @@
+---
+title: 'FAUST CTF 2025'
+description: 'Experience report on the FAUST CTF 2025'
+pubDate: '2025-10-13'
+released: true
+---
+import PlannedInfra from './20250927_faustctf/planned-infra.svg'
+import Score_Birthdaygram from './20250927_faustctf/onemanparty_birthdaygram.png'
+import Score_Cake from './20250927_faustctf/onemanparty_cake.png'
+
+I participated in the [FAUST CTF 2025](https://2025.faustctf.net/) as a solo player, and it turned out way better and way worse than I could have expected.
+In this post, I want to share the layout of my infra, the goals I tried to achieve, and how it all went down.
+
+### Goals
+
+I am playing as a solo player against teams with multiple people.
+Winning is not a realistic goal, simply by not being able to work on all services at the same time.
+ADCTFs have a lot of parallel tasks, which I am not capable of doing.
+So, what do I want to achieve?
+Well, I want to see if the new infra I have created holds up in a real CTF.
+The application that I primarily wanted to test is *Cera*.
+*Cera* is a PCAP analysis tool that performs classification on network traffic, and reconstructs complete exploit scripts.
+It is subject of my master thesis, and will be open sourced at a later day.
+
+Nevertheless, we need to set concrete goals, so we know if we succeeded or failed.
+I decided to look at how many players planned to participate in the CTF.
+I know that it is a larger CTF, so my infra will probably need to be able to handle a lot of traffic.
+When I looked at the "Registered Teams" section, I counted about 300 teams.
+As you have to host your own vulnbox, I assumed 50% of the registered "teams" were not up to the task, and would just not show up.
+Of these 150 teams, I assumed that there are another 50% that would not be able to do any attacks at all, either due to lack of skill, or unpreparedness.
+This leaves us with 75 teams that would actually attack and therefore would count as competition for me.
+Of those teams there are always teams that manage to break their services completely and then drop off because their SLA tanks.
+So, my goal was to be in the top 50 teams.
+This was an ambitious goal, as I was running completely new infra, that was never tested in a live CTF environment before.
+Let's see how that infra looked like.
+
+### Planned Infra vs. IPv6 support
+
+The infra of the organizers is sponsored by [Hetzner](https://hetzner.com/), so I decided to also use Hetzner for my infra.
+I knew I wanted to separate most of my services away from the vulnbox itself.
+Therefore, I opted for a four VM setup.
+One VM was for the vulnbox itself, one for my traffic analysis (Cera), and a third for running attacks (using [ataka](https://github.com/OpenAttackDefenseTools/ataka)).
+The last VM was my router VM that would connect everything together.
+The router VM connects to the *gamenet*, creates a private network for the vulnbox and another network for the tools.
+Lastly, it hosts a OpenVPN server that allows me to connect to my infra from home.
+
+So the planned infra looks like this:
+<PlannedInfra/>
+
+I used [OpenTofu](https://opentofu.org/) and [Ansible](https://docs.ansible.com/) to provision everything.
+Then I ran into the first problem.
+Hetzners *private networks* do not support IPv6... 🤦
+FAUST CTF is an IPv6 only CTF, so I had to find a workaround.
+The services would probably also work via IPv4, but at least the Attacker-VM needs to be able to resolve the IPv6 addresses of the opponents.
+So I created the first cursed part of the infra: Running WireGuard tunnels through the private networks, to be able to route IPv6 traffic.
+
+The second challenge was to upload the vulnbox image to Hetzner.
+This is probably a task that not only CTF players have.
+Why is this so hard?
+The following command worked in the end:
+```bash
+docker run --rm -e HCLOUD_TOKEN="..." ghcr.io/apricote/hcloud-upload-image:v1.1.0 upload \
+  --image-url "https://faust.cs.fau.de/files/faustctf/2025/vulnbox.qcow2" \
+  --server-type cx32 \
+  --format qcow2 \
+  --description "FAUST 2025 Vulnbox"
+```
+
+The last design decision I chose was to run mitmproxy on the router VM for each service, so there is a traffic normalization step before the traffic hits the vulnbox.
+This is important because some teams use traffic fragmentation to obfuscate their network traffic.
+Wireshark and other common tools will mostly deobfuscate this traffic, but my beloved Cera tool does not support this yet.
+The CTF documentation states that the organizers already intercept the traffic, but I wanted to be sure.
+It is easier to just run a reverse proxy that forces the traffic to be clean between the proxy and the vulnbox.
+Lastly, I configured tcpdump to dump all traffic between the proxies and the vulnbox to be stored and sent to Cera for analysis.
+Another benefit of using mitmproxy is that I can also filter out known exploits, or even "patch" vulnerabilities in the network traffic.
+
+### How Hetzner screwed me over
+
+On the day before the CTF I decided to do a **last test** of the infra.
+I had deployed everything each time from scratch every time I worked on it, so I was confident that my setup scripts work.
+These tests were performed with low power VMs to save costs during development.
+The night before the CTF I decided to do a final test with the actual VM types I would use during the CTF.
+Then I realized that Hetzner has very aggressive limits for new users...
+I can only create 5 VMS. That's no problem, I only need 4.
+But I also wanted to have a really powerful one for my analysis tasks.
+I knew that Cera eats 64RAM on small CTFs with less than 100 teams.
+So 128GB RAM would be the one I wanted to go for.
+Instead, I only had access to the CCX33 instance with 32GB RAM and 8-cores.
+This was a bummer, because I really wanted to evaluate Cera in this CTF and I knew that it would just not be able to keep up with the traffic.
+It was late at night, so I decided to leave it as is.
+I could have looked for other clouds or even host it on my local machine that had at least 64GB of RAM, but I was too tired to do so.
+For all other VMs I used CPX41 which provides 16GB RAM and 8 shared cores.
+This was much more than I needed, but I did not want to rescale during the CTF and the costs were small anyway.
+I wanted to buy a more expensive VMs, but Hetzner would not allow me to do so...
+
+### The CTF
+
+The day of the CTF started as planned.
+One hour before the decryption keys were released, I spun up all my VMs, and configured everything.
+The VPN connection status page helped a lot to see if everything was working.
+I prepared a written script for all the tasks that needed to be done at the start of the CTF, so I just followed that.
+I plan on releasing such a script in the future, so stay tuned.
+
+Once the keys were released, I performed the basic first steps.
+I took the decrypted services and created a tar file.
+This tar file was downloaded to my local box, so I could look at the service code more easily.
+While this was going on, I created git repositories for each service, and made sure each service would have at least an initial commit.
+
+Then I started with my first run through the services.
+The goal was to identify the name of the service and the open ports for it.
+This mapping was entered into my setup script for the reverse proxies and into the service configuration for Cera (even if I already knew that Cera will be useless).
+While the proxy setup scripts are running, I started with my first analysis round for the services.
+In this round I start to take notes on the services.
+I note which technologies are used, and I check for obvious vulnerabilities, like hardcoded credentials that need to be changed before the gamenet opens.
+Already the first services `birthdaygram` had a static JWT secret.
+I noted this down, changed the secret and redeployed the service.
+Then I went on to the next service.
+Exploiting the vulnerability is not the goal of the first round.
+I just want to patch any obvious vulnerabilities, so I do not get pwned immediately.
+Changing of static keys might also invalidate existing sessions or cookies.
+I do not want to break the checker once it is running, so changing the secrets is important before the gamenet opens.
+The other services did not have obvious vulnerabilities, so I just noted down the technologies used and moved on.
+
+The setup and the first analysis round took about 45 minutes.
+So at this stage I had about 15min left until the gamenet opens.
+I decided to use this time to write an exploit for the hardcoded JWT secret in `birthdaygram`.
+This was simple, but I needed to wait for the gamenet to open to find out where the flags would be stored and how the flag ids would look like.
+
+The gamenet opened, checker traffic started and the first exploits start hitting the services.
+As suspected, `birthdaygram` was hit right from the start.
+So the exploit must be as simple as the JWT secret abuse I found.
+Sadly, I did not figure out where the stupid flag was stored...
+
+But then I realized something more severe.
+All my services were down.
+That's bad.
+Luckily I quickly figured out that my proxies were listening on the wrong IPv6 address.
+I still had the address of the test vulnbox in the proxy configuration.
+A quick redeploy of the proxies fixed this, but that cost me 7 ticks of uptime.
+
+In minute 44 of the CTF I realized that also my proxy on `birthday-melody` was not working.
+`birthday-melody` is a service hosted over HTTP, but it was not happy when using mitmproxy in HTTP mode.
+So I switched it to TCP mode, and the service was happy again.
+
+So the first hour of the CTF was rough.
+I already lost a lot of points due to downtime, and I could not figure out where the flag was stored in `birthdaygram`.
+I finally figured out the jabcode-like images have flags encoded in the LSBs of the pixel colors and put it in an exploit script at 2h 30min after the network opened.
+Sadly, changing the JWT secret did not fix everything.
+There was still successful exploits against me.
+Because Cera was not doing anything useful, I started to write log statements into the proxy scripts of mitmproxy.
+I have never used mitmproxy as a filtering reverse proxy before, so this took some time.
+I closed the vulnerabilities involving *renaming your account* and *placing comments*, which also leak the flag images.
+The service was completely patched at the 6-hour mark.
+Half an hour later I decided to update my initial exploit for `birthdaygram` to also abuse the *account renaming* vulnerability in case the JWT token forging would not produce flags.
+The scoring shows that this was a good decision, by showing a kink in the attack_sum timeseries.
+
+<figure>
+<img src={Score_Birthdaygram.src} alt={"Score of the service birthdaygram over time"}/>
+<figcaption>Score for OneManParty - Birthdaygram</figcaption>
+</figure>
+
+While I was working on `birthdaygram`, I also started to look at `cake`.
+This service was written in Cobol.
+I found an exploit using my logger in mitmproxy.
+I manually rebuilt the exploit using `pwn-tools`, and started it 4h 30min into the CTF.
+Sadly, the service went down at almost all teams at the same time.
+It took around 45min for the organizers to tell us, that this was not a fault of their checker infra.
+Restarting the service fixed it for me, but I had a lot of downtime here.
+At least many other teams also did not recognize that the fix was actually simple.
+I decided to not touch the actual Cobol code, but just filter out exploits using mitmproxy.
+I managed to block some exploits this way, but until the end many of them still got through.
+Having more experience with mitmproxy would have helped here.
+
+<figure>
+  <img src={Score_Cake.src} alt={"Score of the service cake over time"}/>
+  <figcaption>Score for OneManParty - Cake</figcaption>
+</figure>
+
+One last service was exploited during the CTF, but I did not manage to replicate it, as it was a "crypto" exploit, that could not be reconstructed by looking at network traffic.
+
+### Aftermath and Learnings
+
+After 9 hours of ADCTF action, I ended up on rank **42**!
+This was great success for me, as I also managed to beat the austrian team `defragmented.brains` (with multiple players) which ranked 48th.
+
+My vulnbox saw 10GiB of traffic, which I have as PCAPs for further analysis.
+I also took snapshots of the scoreboard every 30sec, to be able to show how the CTF evolved over time.
+The scoreboard data will be discussed in another article.
+
+What did I learn?
+Having a written script for the start of the CTF is super important.
+I also created a checklist of which files I wanted to keep after the CTF.
+Those lists are very useful.
+I learned that just using a cloud provider such as Hetzner is not as easy as it seems.
+You have to build your infra around the limitations of the provider.
+And lastly, you have to monitor your service uptime in the first round, to check if it is actually working.
+
+In the end, I want to say that it was a great ADCTF, and I am looking forward to the next one.

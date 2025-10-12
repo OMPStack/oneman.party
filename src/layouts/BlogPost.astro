@@ -1,49 +1,50 @@
 ---
-import { Image } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
+import {Image} from 'astro:assets';
+import type {CollectionEntry} from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
-import Header from '../components/Header.astro';
 import Nav from "../components/Nav.astro";
 import SubPageHeader from "../components/SubPageHeader.astro";
+import '../styles/blogstyle.css';
+import {SITE_TITLE} from "../consts.ts";
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const {title, description, pubDate, updatedDate, heroImage} = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
 <head>
-    <BaseHead title={title} description={description} />
+    <BaseHead title={SITE_TITLE + " - " + title} description={description}/>
 </head>
 <body>
 <SubPageHeader/>
+<a class="btn btn-outline-accent" style="display:block; margin-top:-50px; margin-bottom:30px;" href="/">&lt;&lt; Back to home</a>
 <main>
     <article>
         <div class="hero-image">
-            {heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+            {heroImage &&
+                    <Image width={1020} height={510} src={heroImage} alt=""/>}
         </div>
         <div class="prose">
             <div class="title">
                 <h2>{title}</h2>
-                <hr />
+                <hr/>
             </div>
-            <div class="date">
-                <FormattedDate date={pubDate} />
+            <div class="date mb-5 text-muted">
+                Released:
+                <FormattedDate date={pubDate}/>
                 {
-                    updatedDate && (
-                                <div class="last-updated-on">
-                                    Last updated on <FormattedDate date={updatedDate} />
-                                </div>
-                    )
+                    updatedDate && (<>(Last update: <FormattedDate date={updatedDate}/>)</>)
                 }
             </div>
-            <slot />
+            <slot/>
         </div>
     </article>
 </main>
-<Footer />
+<a class="d-block m-5 btn btn-outline-accent" href="/">&lt;&lt; Back to home</a>
+<Footer/>
 </body>
 </html>
