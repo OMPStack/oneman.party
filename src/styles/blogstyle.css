@@ -15,9 +15,10 @@ html {
 }
 
 article {
+    font-size: 16px;
+    line-height: 1.5em;
+
     p {
-        font-size: 16px;
-        line-height: 1.5em;
         padding: 0 0 1em 0;
         text-align: justify;
         margin: 1em 0;
@@ -33,7 +34,7 @@ article {
     h3, h4 {
         margin: 2.5rem 0 1.5rem 0;
         line-height: 1.25;
-        color: #333;
+        color: #777;
     }
 
     img, svg {
@@ -65,3 +66,51 @@ article {
         color: grey;
     }
 }
+
+.timeline {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    --glow-size: 40px;
+
+    .timeline-entry {
+        border: 1px solid #eee;
+    }
+
+    .timeline-text {
+        /* make sure that the text is aligned with the entries */
+        border: 1px solid transparent;
+    }
+
+    .timeline-color-green {
+        --bg-color: #172b17;
+        background-color: var(--bg-color);
+        border-color: #2f572f;
+    }
+    .timeline-color-blue {
+        background-color: #172a2b;
+        border-color: #2f5757;
+    }
+    .timeline-color-red {
+        --bg-color: #2b1717;
+        background-color: var(--bg-color);
+        border-color: #572f2f;
+    }
+    .timeline-color-orange {
+        background-color: #2b2117;
+        border-color: #57432f;
+    }
+    .timeline-color-yellow {
+        background-color: #2b2a17;
+        border-color: #574f2f;
+    }
+    .timeline-color-purple {
+        background-color: #21172b;
+        border-color: #432f57;
+    }
+    .timeline-color-pink {
+        background-color: #2b1726;
+        border-color: #572f4b;
+    }
+}
+

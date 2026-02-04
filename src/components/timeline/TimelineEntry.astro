@@ -1,0 +1,12 @@
+---
+const props = Astro.props;
+const filterList = ['name', 'width', 'color'];
+const filteredProps = Object.fromEntries(
+    Object.entries(props).filter(([key, _]) => !filterList.includes(key))
+);
+---
+
+<div class={"timeline-entry border-1 border-gray-300 p-2 mb-4 " + ("timeline-color-" + props.color + " ") + (props.width ? `w-${props.width}` : 'flex-grow-1')}
+     {...filteredProps}>
+    {props.name}
+</div>

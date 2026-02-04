@@ -1,6 +1,160 @@
 ---
 title: 'AD-CTF Phases'
-description: "From Prep to Network-open to Post-Game. Important deadlines to keep in mind."
-pubDate: '2025-10-15'
-released: false
+description: "From Prep to Network-open to Post-Game. Know what to do and when!"
+pubDate: '2026-02-04'
+released: true
 ---
+
+import Timeline from '../../components/timeline/Timeline.astro'
+import TimelineEntry from '../../components/timeline/TimelineEntry.astro'
+import TimelineText from '../../components/timeline/TimelineText.astro'
+
+This article is meant for people that want to improve their AD-CTF game by not just arriving on site and start to solve some challenges.
+Playing AD-CTFs do have many more preparation steps and phases than jeopardy style competitions.
+This article is written from a meta-gaming / infra perspective, so you should already have played at least one AD-CTF for this article to make sense.
+
+### Basic model
+
+Let's start with a simple model and work our way through what actually happens.
+
+<Timeline>
+  <TimelineEntry name={"Closed net"} color={"red"} width={25} />
+  <TimelineEntry name={"Main Game"} color={"green"} />
+</Timeline>
+
+The simplest version of an AD-CTF has two main phases over a duration of around 9 hours.
+The game starts with a closed network, meaning that the participants only have access to their own machines.
+There is no scoring yet and you cannot attack other teams.
+This first phase is meant for reconnaissance and configuring your defenses.
+It is the most stressful time for infra people, as they need to make sure traffic captures are running, access is working and first patches are applied.
+
+Then the main game starts. The network is opened and attacks start rolling in.
+You can also start attacking other teams if you have exploits yet.
+Once the main game starts also the SLA bot will visit your services place flags and check your uptime.
+You try to submit as many flags as possible and keep your services running until the end.
+
+### Real model
+
+The basic model is not actually describing what is happening.
+Once you get access to the vulnbox there is critical phases that need to happen right at the start.
+<Timeline>
+  <TimelineText text={"Closed net"} with={15} />
+  <TimelineEntry name={"Access"} color={"orange"} width={15} />
+  <TimelineEntry name={"Recon"} color={"purple"} />
+  <TimelineEntry name={"Backups"} color={"yellow"} width={5} />
+  <TimelineEntry name={"Work distribution"} color={"pink"} />
+  <TimelineEntry name={"Patches"} color={"blue"} width={15} />
+</Timeline>
+
+The first step is clearly to get access to the vulnbox.
+This is often done by a single person with only one job.
+<i>Put SSH keys into the right places so everyone else can access the box.</i>
+
+Once initial access is granted the reconnaissance phase starts.
+The questions that should be answered here are:
+* Where are the services located?
+* What services are running?
+* Which ports are open on the network?
+* Is there weaknesses in the global vulnbox host configuration? (aka. is it possible for services to access each others files?)
+
+With the information of the recon phase the infra team can start to make backups of the services.
+Backups are critical. Some team member will break something, and then you need to be able to roll back a service.
+If the vulnbox is hosted by the organizers, you might have access to a "reset" feature that will reset your complete vulnbox to the initial state.
+This feature should only be a last resort.
+If you use this you will have to apply all your changes again. This will lose you a lot of time.
+So make sure you can restore each service to the initial state individually.
+
+The work distribution phase is probably the most important phase.
+You need to communicate as a team and decide who is doing what.
+This can be prepared in advance, but concrete work packets for each person will only be clear at this stage.
+The last part of the closed network phase is to apply hardening for the services and patch vulnerabilities that have already been found.
+
+<Timeline>
+  <TimelineText text={"Main Game"} width={15} />
+  <TimelineEntry name={"Scoring start"} color={"yellow"} width={15} />
+  <TimelineEntry name={"Solving"} color={"purple"} />
+  <TimelineEntry name={"End"} color={"blue"} width={10} />
+</Timeline>
+
+The start of the main game means that the network opens and the score-bot starts visiting your services.
+Check if you services are actually up and your initial patches did not break anything.
+You will have flags in your services and therefore something to lose.
+Find out where the flags are located in the services and finish your exploits according to the locations.
+On the other hand, other teams will start to attack you, so you should keep an eye on the network traffic and check for incoming attacks.
+
+The solving phase is the longest phase of the game.
+You will bash your head against the service code and try to find vulnarbilities and write exploits for them.
+At some stage a team will find a vulnerability in the service and will attack you.
+Use your traffic sniffing setup to find these attacks and try to understand what is going on.
+If you cannot figure out how the attack works, at least filter the traffic patterns on the network layer so you are losing fewer flags.
+
+The end phase is a sub phase of the solving phase.
+As the game starts to get closer to the end, the team will become less focused and the productivity will drop.
+Many players are not willing to start work on a new service or exploit as they know that time is running out.
+Therefore, they will start to refresh the scoreboard and check how many opponents can be overtaken with the current point velocity.
+On the other hand, there are still players that fight for every last flag by manually attacking teams or trying to finish that last exploit in the last second.
+This last phase is more an organizational challenge than a technical one.
+All systems should be running smoothly by now, so infra people can focus on which data should be backed up after the CTF.
+
+
+### The extended model
+
+Understanding the basic phases during an AD-CTF is important.
+However, these are by far not the only phases you will encounter.
+How your team members think about the time apart from the official game phases will decide if you are a competitive or casual CTF team.
+
+<Timeline>
+  <TimelineEntry name={"No CTF"} color={"gray"} width={10} />
+  <TimelineEntry name={"CTF Prep"} color={"blue"} />
+  <TimelineEntry name={"Day-of Prep"} color={"orange"} width={15} />
+  <TimelineEntry name={"Official CTF"} color={"green"} width={15} />
+  <TimelineEntry name={"Party"} color={"purple"} width={"shrink"} />
+  <TimelineEntry name={"Post-CTF"} color={"red"} width={20} />
+</Timeline>
+
+In the extended model we look at all the phases that build up around the official CTF-start and -end.
+The first phase is the "No CTF" phase. In this phase there is no AD-CTF planned, so there is no real stress on the team.
+However, once a CTF is announced and the team decides to participate, the "CTF Prep" phase starts.
+In this phase the team will decide on a specific tool stack to use during the AD-CTF, and might develop tools to be used during the CTF.
+This phase should actually be split into two sub-phases.
+After a first phase, where you explore different tools you should have a "tool freeze" phase and after that point in time you make sure that the tools work well and everyone is trained.
+Do not add tools shortly before the CTF, as this will only lead to confusion and problems.
+
+The "Day-of Prep" phase is the time right before the official CTF starts.
+This happens on the same day as the CTF and includes:
+* Traveling to the CTF location
+* Setting up your infra
+* Starting your laptops and connecting to VPNs
+* Spreading CTF team internal information like IP addresses, usernames and passwords
+* Making sure that there is enough snacks
+
+This phase is often underestimated and causes a lot of stress.
+If the infra is not tested well you will have problems here.
+Do not depend on the CTF organizers to start late and give you more time to set up your infra.
+Once you have access to the vulnboxes all preparations should be done so you can focus completely on the tasks described for the "Closed net" phase.
+
+After the official CTF is over, everyone packs up their stuff.
+You should have a beer or two with your teammates and celebrate the end of the CTF.
+A CTF is a lot of work and causes stress. This phase is important to bring back down the stress levels.
+The infra team will join the party a bit later as they still have to stop and back up the infra.
+Discuss stuff you have encountered with your teammates and enjoy the time together.
+
+However, do not forget that there is still the "Post-CTF" phase.
+This phase starts the day after the CTF.
+In this phase you should think about what went well and what went wrong during the CTF.
+This is something you should document so you can improve for the next CTF.
+Write a blog post, create writeups for challenges you solved and share your experiences with the community.
+If you had problems with your infra, try to fix them for the next CTF.
+Good teams will continuously improve their setup and processes.
+
+### Where all models break down
+
+Well. Now we discussed a very detailed model of how AD-CTFs work.
+Actually, they are even more chaotic than described.
+You will encounter teammates arriving late, and asking how to access the vulnbox way into the main game.
+You will have uptime issues that will involve infra people and changing out infra mid-game.
+Organizers will add additional phases like scoreboard freezes.
+Maybe the orga infra has issues, delaying the main game start.
+Next to all technical issues, there are also human issues.
+There will be surprises, curveballs and unexpected events.
+So try to stay calm, communicate well and adapt to each situation as it unfolds.
